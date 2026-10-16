@@ -1,0 +1,6 @@
+{
+  "name": "Personal Study Time & Productivity Hub",
+  "description": "Quản lý Thời gian & Hiệu suất Học tập Cá nhân - Đồng hồ Pomodoro & Stopwatch, Quản lý Môn học, To-do List và Phân tích Dữ liệu Học tập trực quan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
