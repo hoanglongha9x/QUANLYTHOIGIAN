@@ -22,6 +22,8 @@ import { AnalyticsView } from './components/AnalyticsView';
 import { SessionLogsView } from './components/SessionLogsView';
 import { SettingsModal } from './components/SettingsModal';
 import { ManualLogModal } from './components/ManualLogModal';
+import { StudentProfileModal } from './components/StudentProfileModal';
+import { ReportModal } from './components/ReportModal';
 import { 
   Timer, 
   Sparkles, 
@@ -32,7 +34,10 @@ import {
   Sun, 
   Moon, 
   Flame,
-  Clock
+  Clock,
+  FileText,
+  User,
+  UserPlus
 } from 'lucide-react';
 
 export default function App() {
@@ -42,7 +47,16 @@ export default function App() {
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isManualLogOpen, setIsManualLogOpen] = useState(false);
+  const [isStudentProfileOpen, setIsStudentProfileOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Auto prompt student to enter their name if not set yet
+  useEffect(() => {
+    if (!appData.profile.name || appData.profile.hasCustomizedName === false) {
+      setIsStudentProfileOpen(true);
+    }
+  }, []);
 
   // Sync theme with DOM
   useEffect(() => {
@@ -302,13 +316,15 @@ export default function App() {
           }}
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenManualLog={() => setIsManualLogOpen(true)}
+          onOpenStudentProfile={() => setIsStudentProfileOpen(true)}
+          onOpenReport={() => setIsReportOpen(true)}
         />
       </div>
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         {/* Top Navbar */}
-        <header className="sticky top-0 z-20 backdrop-blur-md bg-slate-950/70 border-b border-slate-800/80 px-6 py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-20 backdrop-blur-md bg-slate-950/70 border-b border-slate-800/80 px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase tracking-wider font-bold text-indigo-400">
               {currentTab === 'dashboard' && 'Dashboard Bento Grid'}
@@ -318,9 +334,21 @@ export default function App() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Student Name Button / Trigger */}
+            <button
+              onClick={() => setIsStudentProfileOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-indigo-500/50 text-slate-200 text-xs font-semibold transition"
+              title="Đổi tên / Thông tin học sinh"
+            >
+              <span>{appData.profile.avatar || '🦉'}</span>
+              <span className="max-w-[100px] sm:max-w-[140px] truncate text-slate-100 font-bold">
+                {appData.profile.name || 'Nhập tên học sinh ✍️'}
+              </span>
+            </button>
+
             {/* Today Goal pill */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs">
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-xs">
               <span className="text-slate-400">Hôm nay:</span>
               <strong className="text-slate-200 font-mono">
                 {Math.floor(todayMinutes / 60)}h{todayMinutes % 60}m
@@ -328,13 +356,24 @@ export default function App() {
               <span className="text-slate-500">/ {appData.profile.dailyGoalHours}h</span>
             </div>
 
+            {/* Report Button */}
+            <button
+              onClick={() => setIsReportOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition"
+              title="Tổng kết kết quả học tập & Báo cáo cho Thầy cô / Bố mẹ"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Báo cáo học tập</span>
+            </button>
+
             {/* Quick manual log button */}
             <button
               onClick={() => setIsManualLogOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 text-xs font-semibold transition"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-750 text-xs font-semibold transition"
+              title="Ghi chép phiên học thủ công"
             >
               <Clock className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Ghi phiên học</span>
+              <span className="hidden md:inline">Ghi phiên</span>
             </button>
           </div>
         </header>
@@ -353,6 +392,8 @@ export default function App() {
                 setSelectedTaskId('');
               }}
               onOpenManualLog={() => setIsManualLogOpen(true)}
+              onOpenStudentProfile={() => setIsStudentProfileOpen(true)}
+              onOpenReport={() => setIsReportOpen(true)}
             />
           )}
 
@@ -416,6 +457,23 @@ export default function App() {
           )}
         </div>
       </main>
+
+      {/* Student Profile & Self-Naming Modal */}
+      <StudentProfileModal
+        isOpen={isStudentProfileOpen}
+        onClose={() => setIsStudentProfileOpen(false)}
+        profile={appData.profile}
+        onSaveProfile={handleUpdateProfile}
+        isFirstTime={!appData.profile.name}
+      />
+
+      {/* Official Study Report Modal */}
+      <ReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        appData={appData}
+        streak={streak}
+      />
 
       {/* Settings & Data Portability Modal */}
       <SettingsModal

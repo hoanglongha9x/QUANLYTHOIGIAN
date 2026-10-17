@@ -41,8 +41,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   // Profile form
   const [name, setName] = useState(appData.profile.name);
+  const [gradeOrClass, setGradeOrClass] = useState(appData.profile.gradeOrClass || '');
+  const [studentId, setStudentId] = useState(appData.profile.studentId || '');
   const [avatar, setAvatar] = useState(appData.profile.avatar || '🦉');
   const [dailyGoalHours, setDailyGoalHours] = useState(appData.profile.dailyGoalHours);
+  const [supervisorName, setSupervisorName] = useState(appData.profile.supervisorName || 'Thầy/Cô/Phụ huynh');
+  const [supervisorEmail, setSupervisorEmail] = useState(appData.profile.supervisorEmail || '');
 
   // Timer form
   const [pomodoroMinutes, setPomodoroMinutes] = useState(appData.timerSettings.pomodoroMinutes);
@@ -59,8 +63,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     onUpdateProfile({
       ...appData.profile,
       name: name.trim(),
+      gradeOrClass: gradeOrClass.trim(),
+      studentId: studentId.trim(),
       avatar,
       dailyGoalHours: Number(dailyGoalHours),
+      supervisorName: supervisorName.trim(),
+      supervisorEmail: supervisorEmail.trim(),
+      hasCustomizedName: true,
     });
     onClose();
   };
@@ -102,7 +111,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleLoadDemo = () => {
-    const demo = getDemoData();
+    const demo = getDemoData(appData.profile);
     onRestoreData(demo);
     setImportMessage({ text: 'Đã nạp thành công 7 ngày dữ liệu mẫu!', type: 'success' });
     setTimeout(() => {
@@ -174,18 +183,79 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="p-6">
           {/* TAB 1: PROFILE */}
           {activeTab === 'profile' && (
-            <form onSubmit={handleSaveProfile} className="space-y-4">
+            <form onSubmit={handleSaveProfile} className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Họ và tên / Biệt danh
+                  Họ và tên học sinh <span className="text-rose-400">*</span>
                 </label>
                 <input
                   type="text"
                   required
+                  placeholder="Nhập họ tên của bạn..."
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-3 py-2 text-sm rounded-lg bg-slate-800 border border-slate-700 focus:border-indigo-500 text-slate-100 outline-none"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Lớp / Khóa học
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: 12A1"
+                    value={gradeOrClass}
+                    onChange={(e) => setGradeOrClass(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-slate-800 border border-slate-700 focus:border-indigo-500 text-slate-100 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Mã học sinh
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: HS-102"
+                    value={studentId}
+                    onChange={(e) => setStudentId(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-lg bg-slate-800 border border-slate-700 focus:border-indigo-500 text-slate-100 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-slate-800">
+                <label className="block text-xs font-semibold text-amber-400 mb-2">
+                  Thông tin người nhận báo cáo học tập
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">
+                      Thầy cô / Phụ huynh
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Thầy/Cô/Bố mẹ"
+                      value={supervisorName}
+                      onChange={(e) => setSupervisorName(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-slate-800 border border-slate-700 focus:border-indigo-500 text-slate-100 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">
+                      Email nhận báo cáo
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="email@example.com"
+                      value={supervisorEmail}
+                      onChange={(e) => setSupervisorEmail(e.target.value)}
+                      className="w-full px-3 py-1.5 text-xs rounded-lg bg-slate-800 border border-slate-700 focus:border-indigo-500 text-slate-100 outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -198,9 +268,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="button"
                       key={av}
                       onClick={() => setAvatar(av)}
-                      className={`h-10 rounded-xl text-xl flex items-center justify-center transition ${
+                      className={`h-9 rounded-xl text-lg flex items-center justify-center transition ${
                         avatar === av
-                          ? 'bg-indigo-600 ring-2 ring-indigo-400 scale-105'
+                          ? 'bg-indigo-600 ring-2 ring-indigo-400 scale-105 text-white'
                           : 'bg-slate-800 hover:bg-slate-750'
                       }`}
                     >
@@ -226,8 +296,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 />
                 <div className="flex justify-between text-[10px] text-slate-500 mt-1">
                   <span>1 giờ</span>
-                  <span>4 giờ (Tiêu chuẩn)</span>
-                  <span>8 giờ</span>
+                  <span>3.5 giờ</span>
+                  <span>6 giờ</span>
                   <span>12 giờ</span>
                 </div>
               </div>

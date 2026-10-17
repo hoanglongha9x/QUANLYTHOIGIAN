@@ -5,7 +5,12 @@ export type TimerMode = 'pomodoro' | 'shortBreak' | 'longBreak' | 'stopwatch';
 export interface UserProfile {
   name: string;
   avatar: string;
+  gradeOrClass?: string;
+  studentId?: string;
+  supervisorName?: string;
+  supervisorEmail?: string;
   dailyGoalHours: number; // e.g. 4.0
+  hasCustomizedName?: boolean;
   createdAt: string;
 }
 

@@ -9,7 +9,11 @@ import {
   ArrowRight, 
   BookOpen,
   Calendar,
-  BarChart2
+  BarChart2,
+  FileText,
+  UserCheck,
+  Edit2,
+  UserPlus
 } from 'lucide-react';
 import { AppData, Task, Subject } from '../types';
 import { getSubjectColor } from '../utils/colors';
@@ -22,6 +26,8 @@ interface DashboardViewProps {
   onSelectForFocus: (task: Task) => void;
   onStartFocus: (subjectId: string) => void;
   onOpenManualLog: () => void;
+  onOpenStudentProfile: () => void;
+  onOpenReport: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -32,6 +38,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onSelectForFocus,
   onStartFocus,
   onOpenManualLog,
+  onOpenStudentProfile,
+  onOpenReport,
 }) => {
   const { profile, subjects, tasks, logs } = appData;
   const goalMinutes = Math.max(1, Math.round(profile.dailyGoalHours * 60));
@@ -49,30 +57,79 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     return 'Chào buổi tối';
   };
 
+  const studentDisplayName = profile.name || 'Học sinh';
+
   return (
     <div className="space-y-6">
+      {/* Alert Banner if Student Hasn't Customized Name Yet */}
+      {!profile.name && (
+        <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl p-2 rounded-xl bg-amber-500/20 text-amber-400">👋</span>
+            <div>
+              <p className="text-sm font-bold text-amber-300">
+                Bạn chưa nhập tên học sinh!
+              </p>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Vui lòng nhập họ tên và lớp của bạn để kết quả học tập được lưu và tạo báo cáo gửi Thầy cô / Bố mẹ.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onOpenStudentProfile}
+            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Nhập tên học sinh ngay</span>
+          </button>
+        </div>
+      )}
+
       {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-900/60 via-slate-900 to-slate-900 border border-indigo-500/30 p-6 md:p-8">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="text-2xl">{profile.avatar || '🦉'}</span>
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
-                {getGreeting()}, {profile.name}
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                {getGreeting()}, <strong className="text-white text-sm font-bold">{studentDisplayName}</strong>
+                {profile.gradeOrClass && (
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    {profile.gradeOrClass}
+                  </span>
+                )}
               </span>
+              <button
+                onClick={onOpenStudentProfile}
+                className="text-[11px] text-indigo-400 hover:text-indigo-300 underline flex items-center gap-1 ml-1"
+                title="Đổi tên / Chỉnh sửa hồ sơ học sinh"
+              >
+                <Edit2 className="w-3 h-3" />
+                <span>Đổi tên</span>
+              </button>
             </div>
+
             <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
               Sẵn sàng cho một ngày học tập bứt phá!
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-xl">
-              Tập trung từng khối 25 phút. Duy trì chuỗi ngày <strong className="text-amber-400">{streak} ngày 🔥</strong> liên tục của bạn.
+              Học tập có mục tiêu, tích lũy từng giờ và tổng kết báo cáo cho <strong className="text-amber-400">{profile.supervisorName || 'Thầy cô / Phụ huynh'}</strong>.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              onClick={onOpenReport}
+              className="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-indigo-300 hover:text-white font-bold text-xs sm:text-sm flex items-center gap-2 border border-indigo-500/30 transition shadow-sm"
+              title="Tổng kết và xuất báo cáo học tập"
+            >
+              <FileText className="w-4 h-4 text-indigo-400" />
+              <span>Báo cáo kết quả</span>
+            </button>
+
             <button
               onClick={() => onNavigateTab('timer')}
-              className="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition transform active:scale-95"
+              className="px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition transform active:scale-95"
             >
               <Play className="w-4 h-4 fill-current" />
               <span>Vào Trạm Tập trung</span>

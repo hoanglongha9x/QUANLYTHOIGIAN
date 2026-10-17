@@ -3,9 +3,14 @@ import { AppData, Subject, Task, StudyLog, UserProfile, TimerSettings } from '..
 const STORAGE_KEY = 'study_hub_data_v1';
 
 export const DEFAULT_PROFILE: UserProfile = {
-  name: 'Học Viên Tập Trung',
+  name: '',
   avatar: '🦉',
+  gradeOrClass: '',
+  studentId: '',
+  supervisorName: 'Thầy/Cô/Phụ huynh',
+  supervisorEmail: '',
   dailyGoalHours: 3.5,
+  hasCustomizedName: false,
   createdAt: new Date().toISOString(),
 };
 
@@ -111,8 +116,17 @@ export function getInitialData(): AppData {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed.profile && parsed.subjects && parsed.tasks) {
+        // If the saved profile still has old default placeholder "Nguyễn Văn Minh" without customized flag, allow customization
+        const isLegacyMinh = parsed.profile.name === 'Nguyễn Văn Minh' && parsed.profile.hasCustomizedName !== true;
+        const profileName = isLegacyMinh ? '' : (parsed.profile.name || '');
+
         return {
-          profile: { ...DEFAULT_PROFILE, ...parsed.profile },
+          profile: {
+            ...DEFAULT_PROFILE,
+            ...parsed.profile,
+            name: profileName,
+            hasCustomizedName: !isLegacyMinh && Boolean(parsed.profile.hasCustomizedName && parsed.profile.name),
+          },
           subjects: parsed.subjects || DEFAULT_SUBJECTS,
           tasks: parsed.tasks || DEFAULT_TASKS,
           logs: parsed.logs || [],
@@ -126,7 +140,10 @@ export function getInitialData(): AppData {
   }
 
   // First time initial data
-  return getDemoData();
+  const initial = getDemoData();
+  initial.profile.name = '';
+  initial.profile.hasCustomizedName = false;
+  return initial;
 }
 
 export function saveAppData(data: AppData) {
@@ -140,7 +157,7 @@ export function saveAppData(data: AppData) {
 /**
  * Generate rich, realistic 7-day demo data
  */
-export function getDemoData(): AppData {
+export function getDemoData(existingProfile?: UserProfile): AppData {
   const subjects = [...DEFAULT_SUBJECTS];
   const logs: StudyLog[] = [];
   const now = new Date();
@@ -189,10 +206,15 @@ export function getDemoData(): AppData {
   }));
 
   return {
-    profile: {
-      name: 'Nguyễn Văn Minh',
+    profile: existingProfile || {
+      name: '',
       avatar: '⚡',
+      gradeOrClass: 'Lớp 12A1',
+      studentId: 'HS-2026',
+      supervisorName: 'Thầy/Cô/Phụ huynh',
+      supervisorEmail: '',
       dailyGoalHours: 3.5,
+      hasCustomizedName: false,
       createdAt: new Date(now.getTime() - 30 * 86400000).toISOString(),
     },
     subjects: updatedSubjects,
